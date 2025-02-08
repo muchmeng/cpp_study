@@ -6,7 +6,7 @@ int main(){
     srand(time(NULL));
 
     int num1 = rand() % 6 + 1; //roll three dices
-    int num2 = rand() % 6 + 1;
+    int num2 = rand() % 6 + 1; // rand() will generate int number [0, RaAND_MAX]
     int num3 = rand() % 6 + 1;
 
     std::cout << num1 << '\n';
