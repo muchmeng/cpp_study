@@ -1,54 +1,56 @@
+#include <algorithm>
+#include <iomanip>
+#include <ios>
 #include <iostream>
-#include <cctype>
+#include <stdexcept>
+#include <string>
 #include <vector>
-using std::vector;
-using std::string;
-using std::cout;
-using std::cin;
-using std::endl;
+#include "grade.h"
+#include "Student_info.h"
+#include "extract_fails.h"
 
-vector<string> split(const string& s)
+using std::cin; using std::setprecision;
+using std::cout; using std::sort;
+using std::domain_error; using std::streamsize;
+using std::endl; using std::string;
+using std::max; using std::vector;
+
+int main()
 {
-    vector<string> ret;
-    typedef string::size_type string_size;
-    string_size i = 0;
-    // invariant: we have processed characters [original value of i, i)
-    while (i != s.size()) {
-    // ignore leading blanks
-    // invariant: characters in range [original i, current i) are all spaces
-        while (i != s.size() && isspace(s[i]))
-        ++i;
-        // find end of next word
-        string_size j = i;
-        // invariant: none of the characters in range [original j, current j)is a space
-        while (j != s.size() && !isspace(s[j]))
-        j++;
-        // if we found some nonwhitespace characters
-        if (i != j) {
-        // copy from s starting at i and taking j - i chars
-        ret.push_back(s.substr(i, j - i));
-        i = j;
-        }
+    vector<Student_info> students;
+    Student_info record;
+    string::size_type maxlen = 0; // the length of the longest name
+    // read and store all the students data.
+    // Invariant: students contains all the student records read so far
+    // maxlen contains the length of the longest name in students
+    cout << "Please enter the following: StudentName Midterm Final and Homeworks, end by file:";
+    while (read(cin, record)) {
+        // find length of longest name
+        maxlen = max(maxlen, record.name.size());
+        students.push_back(record);
     }
-    return ret;
-}
+    // alphabetize the student records
+    sort(students.begin(), students.end(), compare);
+    // write the names and grades
+    for (vector<Student_info>::size_type i = 0; i != students.size(); ++i) {
+        // write the name, padded on the right to maxlen + 1 characters
+        cout << students[i].name << string(maxlen + 1 - students[i].name.size(), ' ');
+        // compute and write the grade
+        try {
+            double final_grade = grade(students[i]);
+            streamsize prec = cout.precision();
+            cout << setprecision(3) << final_grade
+            << setprecision(prec);
+        } catch (domain_error e) {
+            cout << e.what();
+        }
+        cout << endl;
+    }
 
-int main() {
-    string s;
-    // read and split each line of input
-    while (getline(cin, s)) {
-    vector<string> v = split(s);
-    // write each word in v
-    for (vector<string>::size_type i = 0; i != v.size(); ++i)
-        cout << v[i] << endl;
+    vector<Student_info> fails = extract_fails(students);
+    cout << "The students below failed:\n";
+    for (vector<Student_info>::size_type i = 0; i != fails.size(); ++i) {
+        cout << fails[i].name << " failed.\n";
     }
     return 0;
 }
-
-// int main()
-// {
-//     string s;
-//     while (cin >> s)
-//         cout << s << endl;
-//     return 0;
-// }
